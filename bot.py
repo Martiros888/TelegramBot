@@ -49,7 +49,7 @@ def callback_line(call):
             button1 = types.InlineKeyboardButton('Saint Petersburg',callback_data='petersburg_english')
             button2 = types.InlineKeyboardButton('Moscow',callback_data='moscow_english')
             markup.add(button1,button2)
-            bot.delete_message(chatchat_id=call.message.chat.id,messagechat_id=call.message.messagechat_id)
+            bot.delete_message(call.message.chat.id,call.message.message_id)
             bot.send_message(call.message.chat.id,'you choose English',reply_markup=markup)
             return 
         elif call.data == 'russian':
@@ -57,7 +57,7 @@ def callback_line(call):
             button1 = types.InlineKeyboardButton('Санкт-Петербург',callback_data='petersburg_russian')
             button2 = types.InlineKeyboardButton('Москва',callback_data='moscow_russian')
             markup.add(button1,button2)
-            bot.delete_message(chatchat_id=call.message.chat.id,messagechat_id=call.message.messagechat_id)
+            bot.delete_message(call.message.chat.id,call.message.message_id)
             bot.send_message(call.message.chat.id,'вы выбрали русский язык',reply_markup=markup)
             return 
         data = call.data.split('_')
@@ -66,10 +66,10 @@ def callback_line(call):
             'city':data[0],
         }
         if data[1] == 'russian':
-            bot.delete_message(call.message.chat.id,call.message.messagechat_id)
+            bot.delete_message(call.message.chat.id,call.message.message_id)
             bot.send_message(call.message.chat.id,'пожалуйста, нажмите на /questions, чтобы ответить на вопросы')
             return 
-        bot.delete_message(call.message.chat.id,call.message.messagechat_id)
+        bot.delete_message(call.message.chat.id,call.message.message_id)
         bot.send_message(call.message.chat.id,'please click on /questions for asking questions')
                    
     
@@ -77,7 +77,6 @@ def callback_line(call):
 
 @bot.message_handler(content_types=['text'])
 def send_message(message):
-    # print(users)
     if message.chat.id not in users:
         bot.send_message(message.chat.id,'/start for restart')
         return 
