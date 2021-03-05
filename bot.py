@@ -9,7 +9,7 @@ import os
 import jwt
 import requests
 import json
-link = 'http://192.168.1.22:3000/tokens/'
+link = 'http://192.168.1.2:3000/tokens/'
 
 questions_english = ['name','surname','age','passport number','date of delivery','date of issue']
 questions_russian = ['имя','фамилия','возраст','номер паспорта','Дата доставки','Дата выдачи']
@@ -27,7 +27,8 @@ def start(message):
     button1 = types.InlineKeyboardButton('Russian',callback_data='russian')
     button2 = types.InlineKeyboardButton('English',callback_data='english')
     markup.add(button1,button2)
-    bot.send_message(message.chat.id,'Hello {} please choose language'.format(message.from_user.first_name),reply_markup=markup)
+    bot.send_message(message.chat.id,'Добрый день этот бот поможет вам получить анализ PCR на коронавирус и также сертификаты o вакцинации \n{} прошу вас выбрать язык'.format(message.from_user.first_name),reply_markup=markup)
+
 
 
 
@@ -58,7 +59,7 @@ def callback_line(call):
             button2 = types.InlineKeyboardButton('Москва',callback_data='moscow_russian')
             markup.add(button1,button2)
             bot.delete_message(call.message.chat.id,call.message.message_id)
-            bot.send_message(call.message.chat.id,'вы выбрали русский язык',reply_markup=markup)
+            bot.send_message(call.message.chat.id,'Вы выбрали русский язык',reply_markup=markup)
             return 
         data = call.data.split('_')
         users[call.message.chat.id]['info'] = {
@@ -80,13 +81,16 @@ def send_message(message):
     if message.chat.id not in users:
         bot.send_message(message.chat.id,'/start for restart')
         return 
+    if 'info' not in users[message.chat.id]:
+        bot.send_message(message.chat.id,'/start for restart you do something error')
+        return
     if users[message.chat.id]['info']['language'] == 'english':    
         if 'questions' in users[message.from_user.id]:
             user = users[message.from_user.id]
             user[user['questions'][len(user['questions']) - 1]] = message.text
             if len(user['questions']) == len(questions_english):
                 data = users[message.chat.id]
-                requests.post('http://192.168.1.22:8888/adduser',{'user':json.dumps(data),'chat_id':message.chat.id})
+                res = requests.post('http://192.168.1.2:8888/adduser',{'user':json.dumps(data),'chat_id':message.chat.id})
                 del users[message.chat.id] 
                 encoded_jwt = jwt.encode({'chat_id':message.chat.id},'secretkey',algorithm='HS256')
                 qr = qrcode.QRCode(version=1,box_size=10,border=5)
@@ -95,7 +99,7 @@ def send_message(message):
                 img = qr.make_image(fill='black',back_color='white')
                 random_name = 'img'+str(random())+'.png'
                 img.save('images/'+random_name)
-                img = open('./images/'+random_name,'rb')
+                img = open('./images/' + random_name,'rb')
                 bot.send_photo(message.chat.id,img,reply_markup=None)
                 bot.send_message(message.chat.id,link + encoded_jwt)
                 return
@@ -109,7 +113,7 @@ def send_message(message):
             user[user['questions'][len(user['questions']) - 1]] = message.text
             if len(user['questions']) == len(questions_russian):
                 data = users[message.chat.id]
-                requests.post('http://192.168.1.22:8888/adduser',{'user':json.dumps(data),'chat_id':message.chat.id})
+                requests.post('http://192.168.1.2:8888/adduser',{'user':json.dumps(data),'chat_id':message.chat.id})
                 del users[message.chat.id] 
                 encoded_jwt = jwt.encode({'chat_id':message.chat.id},'secretkey',algorithm='HS256')
                 qr = qrcode.QRCode(version=1,box_size=10,border=5)
